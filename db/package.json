@@ -1,0 +1,24 @@
+{
+  "name": "db",
+  "version": "1.0.0",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "firebase-admin": "^13.5.0",
+    "nanoid": "^5.1.5"
+  },
+  "scripts": {
+    "dev": "tsx db.ts",
+    "build": "tsc",
+    "ci": "yarn install && yarn build",
+    "start": "node dist/db.js"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19"
+  }
+}
+
+
