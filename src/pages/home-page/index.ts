@@ -56,6 +56,7 @@ export class Home extends HTMLElement{
       console.log("UserId antes de crear room:", userId);
       const newRoomId = await state.creRoom(userId)
       state.setRoomId(newRoomId)
+      state.init();
       Router.go('/chatRoom');
     } catch (error) {
       console.error("Error en el signup:", error);
@@ -67,6 +68,7 @@ export class Home extends HTMLElement{
       state.setNombre(nombre);
       state.setUserId(userId); // Guarda el userId en el estado
       state.setRoomId(roomId)
+      state.init();
       Router.go('/chatRoom');
     } catch (error) {
       console.error("Error en el auth:", error);
