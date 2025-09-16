@@ -5,6 +5,7 @@ type  Message = {
   fecha: string
   from: string
   message: string
+  roomId: string;
 }
 
 // Sign Up and log In section -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -62,86 +63,69 @@ export {getRoom}
 
 // verbo Get
 
-function getMessages(){
-  return fetch(API_BASE_URL +"/messages",{
-  headers: {
-    'Content-Type': 'application/json' 
-  },
-  }).then(res => res.json())
-  .then(data => {
-    console.log(data.messages)
-    return data.messages
-  }).catch(error =>{
-    console.log(error)
+function getMessages(roomId: string) {
+  return fetch(`${API_BASE_URL}/messages?roomId=${roomId}`, {
+    headers: { 'Content-Type': 'application/json' }
   })
+  .then(res => res.json())
+  .then(data => data.messages)
+  .catch(console.error);
 }
+
 
 export {getMessages}
 
 //verbo Post
 
-function postMessage(newMessage : Message){
-  return fetch (API_BASE_URL + "/messages", {
+function postMessage(newMessage: Message) {
+  return fetch(`${API_BASE_URL}/messages`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(newMessage)
-  }).then(res =>{
-    if(!res.ok){
-      throw new Error("Error al enviar el mensaje");
-    }
-    return res.json()
-  }).then(data =>{
-    console.log(data.message)
-    return data.message
-  }).catch(error =>{
-    console.log(error)
   })
+  .then(res => {
+    if (!res.ok) throw new Error("Error al enviar el mensaje");
+    return res.json();
+  })
+  .then(data => data.message)
+  .catch(console.error);
 }
 
 export{postMessage}
 
 // Verbo Put
 
-function putMessage(id: string, updatedMessage: Partial<Message>){
-  return fetch(API_BASE_URL + `/messages/${id}`, {
+function putMessage(id: string, updatedMessage: Partial<Message>) {
+  return fetch(`${API_BASE_URL}/messages/${id}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json'
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(updatedMessage)
-  }).then(res =>{
-    if(!res.ok){
-      throw new Error("Error al actualizar el mensaje");
-    }
-    return res.json()
-  }).then(data =>{
-    console.log(data.message)
-    return data.message
   })
+  .then(res => {
+    if (!res.ok) throw new Error("Error al actualizar el mensaje");
+    return res.json();
+  })
+  .then(data => data.message)
+  .catch(console.error);
 }
+
 
 export{putMessage}
 
 
 // Verbo Delete
 
-function deleteMessage(id: string){
-  return fetch(API_BASE_URL + `/messages/${id}`, {
+function deleteMessage(id: string) {
+  return fetch(`${API_BASE_URL}/messages/${id}`, {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-  }).then(res =>{
-      if(!res.ok){
-      throw new Error("Error al Eliminar el mensaje");
-    }
-    return res.json()
-    
-  }).catch(error =>{
-  console.error("Error:", error)
+    headers: { 'Content-Type': 'application/json' }
   })
+  .then(res => {
+    if (!res.ok) throw new Error("Error al eliminar el mensaje");
+    return res.json();
+  })
+  .catch(console.error);
 }
+
 
 export{deleteMessage}
