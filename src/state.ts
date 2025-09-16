@@ -11,27 +11,34 @@ import { putMessage } from "./api"
 import { deleteMessage } from "./api"
 
 type  Message = {
+  id:string
   fecha: string
   from: string
   message: string
 }
+type AppState = {
+  nombre: string;
+  messages: { [roomId: string]: Message[] };
+  id: string;
+  email: string;
+  roomId: string;
+};
 
 const state = {
   data: {
     nombre: "",
-    messages: {},
+    messages: {} as { [roomId: string]: Message[] },
     id: '',
     email: "",
     roomId: '',
   },
-  listeners: [],
-
+  listeners: [] as Array<(state: AppState) => void>,
   init() {
   const currentRoomId = this.getState().roomId;
   const chatRoomRef = rtdb.ref(`chatrooms/${currentRoomId}/messages`);
   chatRoomRef.on("value", (snapshot) => {
     const messagesFromServer = snapshot.val();
-    const newMessages = messagesFromServer ? Object.values(messagesFromServer) : [];
+    const newMessages = messagesFromServer ? Object.values(messagesFromServer) as Message[] : [];
     const currentState = this.getState();
     currentState.messages[currentRoomId] = newMessages;
     this.setState(currentState);
@@ -126,38 +133,53 @@ const state = {
       console.error("Error al enviar el mensaje", error)
     })
   },
-  modifiedMessage(id: string, updatedMessage: Partial<Message>){
-    return putMessage(id, updatedMessage).then(modMessage =>{
-      const currentState = this.getState()
-      const upMessage = currentState.messages.map(msg =>{
-      return msg.id === id ? modMessage : msg
-      })
-      this.setState({...currentState, messages: upMessage})
-    }).catch(error =>{
-      console.error("Error al actualizar el mensaje", error)
-    })
-  },
-  removeMessage(id: string){
-    return deleteMessage(id).then(removingMessage =>{
-      const currentState = this.getState()
-      const deletingMessage = currentState.messages.filter(msg => msg.id !== id)
-      this.setState({ ...currentState, messages: deletingMessage });
-      console.log("Mensaje removido correctamente")
-    }).catch(error => {
-      console.error("Error al remover el mensaje:", error);
+  modifiedMessage(id: string, updatedMessage: Partial<Message>) {
+  return putMessage(id, updatedMessage).then(modMessage => {
+    const currentState = this.getState();
+    const currentRoomId = currentState.roomId; // Obtener el roomId actual
+    const messagesForRoom = currentState.messages[currentRoomId] || []; // Acceder al array de mensajes de la sala actual
+
+    // Actualizar el mensaje en el array correspondiente
+    const upMessage = messagesForRoom.map(msg => {
+      return msg.id === id ? { ...msg, ...modMessage } : msg; // Combinar el mensaje existente con el modificado
     });
-  },
+
+    // Asignar el array actualizado de vuelta al estado
+    currentState.messages[currentRoomId] = upMessage;
+    this.setState(currentState);
+  }).catch(error => {
+    console.error("Error al actualizar el mensaje", error);
+  });
+},
+  removeMessage(id: string) {
+    return deleteMessage(id).then(removingMessage => {
+    const currentState = this.getState();
+    const currentRoomId = currentState.roomId; // Obtener el roomId actual
+    const messagesForRoom = currentState.messages[currentRoomId] || []; // Acceder al array de mensajes de la sala actual
+
+    // Filtrar el mensaje que se quiere eliminar
+    const deletingMessage = messagesForRoom.filter(msg => msg.id !== id);
+
+    // Asignar el array actualizado de vuelta al estado
+    currentState.messages[currentRoomId] = deletingMessage;
+    this.setState(currentState);
+    
+    console.log("Mensaje removido correctamente");
+  }).catch(error => {
+    console.error("Error al remover el mensaje:", error);
+  });
+},
   getState(){
     return this.data
   },
-  setState(newState){
+  setState(newState: AppState ){
     this.data = newState
     this.listeners.forEach(callback => callback(this.data))
   },
-  subscribe(callback){
-    this.listeners.push(callback)
+  subscribe(callback: (state: AppState) => void) {
+  this.listeners.push(callback);
   },
-  notify() {
+  notify() { 
     this.listeners.forEach(callback => callback(this.data));
   },
 }

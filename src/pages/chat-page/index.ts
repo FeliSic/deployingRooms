@@ -1,9 +1,15 @@
 import { state } from "../../state"
 
 type  Messages = {
+  id:string
   fecha: string
   from: string
   message: string
+}
+type AppState = {
+  roomId: string;
+  nombre: string;
+  messages: { [key: string]: Messages[] }; // o messages si así lo tenés
 }
 export class Chat extends HTMLElement{
   connectedCallback(){
@@ -13,7 +19,7 @@ export class Chat extends HTMLElement{
   }
 
 subscribeToState() {
-  state.subscribe((newState) => {
+  state.subscribe((newState: AppState) => {
     const currentRoomId = state.getState().roomId;
     console.log("subscribeToState - mensajes para roomId", currentRoomId, newState.messages[currentRoomId]);
     this.renderMessages(newState.messages[currentRoomId] || []);
@@ -29,6 +35,7 @@ subscribeToState() {
 
       if(message){
         const newMessage: Messages = {
+          id: crypto.randomUUID(),
           fecha: new Date().toISOString(),
           from: state.getState().nombre,
           message: message,
